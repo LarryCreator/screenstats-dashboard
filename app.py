@@ -1,6 +1,7 @@
 import sys
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QCheckBox, QGridLayout, QFrame, QVBoxLayout, QHBoxLayout, QLineEdit
+from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QCheckBox, QGridLayout, QFrame, QVBoxLayout, QHBoxLayout, QLineEdit, QStackedWidget
+from style import style_sheet
 
 
 class ScreenStats(QWidget):
@@ -8,59 +9,30 @@ class ScreenStats(QWidget):
         super().__init__()
         self.title = 'ScreenStats'
         self.setWindowTitle(self.title)
-        self.search_bar = QLineEdit()
 
-        self.top_bar = QFrame()
-        self.sidebar_frame = QFrame()
-        self.sidebar_layout = QVBoxLayout(self.sidebar_frame)
-        self.top_bar_layout = QHBoxLayout(self.top_bar)
-        self.main_content = QLabel("Main Dashboard Content Goes Here")
+        self.dashboard_page = DashboardPage()
+        self.my_library_page = MyLibraryPage()
+        self.add_title_page = AddTitlePage()
+        self.recommendations_page = RecommendationsPage()
+        self.import_export_page = ImportExportPage()
+        self.settings_page = SettingsPage()
+        self.pages = QStackedWidget()
+        self.top_bar = TopBar()
+        self.sidebar_frame = SideBar(self)
+
+        self.pages.addWidget(self.dashboard_page)
+        self.pages.addWidget(self.my_library_page)
+        self.pages.addWidget(self.add_title_page)
+        self.pages.addWidget(self.recommendations_page)
+        self.pages.addWidget(self.import_export_page)
+        self.pages.addWidget(self.settings_page)
+        self.pages.setCurrentIndex(1)
+
 
         self.layout = QGridLayout()
-
-        self.setup_sidebar()
-        self.setup_top_bar()
         self.setup_main_layout()
 
-        self.setStyleSheet("""
-            QFrame#sideBarFrame {
-                padding: 10px;               
-            
-            }
-
-            QFrame#titleFrame {
-                padding: 20px;
-                }               
-
-            QLabel#mainHeader {
-                font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
-                text-transform: uppercase;
-                letter-spacing: 2px;
-                color: #c4a15b; 
-                font-size: 17px;
-                font-weight: bold;
-
-            }
-                           
-            QLineEdit {
-                background-color: #f0f0f0;
-                border: 1px solid #ccc;
-                border-radius: 15px; /* Makes it look like a pill */
-                padding: 5px 15px;
-                font-size: 14px;
-            }
-            QLineEdit:focus {
-                border: 1px solid #3498db; /* Change color when typing */
-            }
-                
-            QPushButton#dashboardButton {
-                padding: 10px;
-                font-size: 15px;
-                border: 2px solid gray;
-                background: None;
-                font-weight: bold;            
-            }
-        """)
+        self.setStyleSheet(style_sheet)
 
     def setup_main_layout(self):
         self.layout.setContentsMargins(0,0,0,0)
@@ -71,7 +43,7 @@ class ScreenStats(QWidget):
         self.layout.addWidget(self.sidebar_frame, 0, 0, 2, 1)
 
         self.layout.addWidget(self.top_bar, 0, 1)
-        self.layout.addWidget(self.main_content, 1, 1)
+        self.layout.addWidget(self.pages, 1, 1)
 
         # MAGIC LINES: Tell the grid where to push the "empty" space
         self.layout.setColumnStretch(1, 1) # Column 1 (content) takes all extra width
@@ -82,30 +54,124 @@ class ScreenStats(QWidget):
         self.sidebar_frame.setMaximumWidth(250)
 
         self.setLayout(self.layout)
-    
-    def setup_sidebar(self):
-        self.sidebar_frame.setObjectName('sideBarFrame')
+
+class SideBar(QFrame):
+    def __init__(self, app):
+        super().__init__()
+        self.app = app
+        self.layout = QVBoxLayout(self)
+        self.setObjectName('sideBarFrame')
+
         title_frame = QFrame()
-        title_frame.setObjectName('titleFrame')
         title_frame_layout = QVBoxLayout(title_frame)
         self.title_label = QLabel('ScreenStats')
-        self.title_label.setObjectName('mainHeader')
-        sidebar_DashboardButton = QPushButton('Dashboard')
-        sidebar_DashboardButton.setObjectName('dashboardButton')
-        sidebar_DashboardButton.setCursor(Qt.PointingHandCursor)
-        title_frame_layout.addWidget(self.title_label)
-        self.sidebar_layout.addWidget(title_frame)
-        self.sidebar_layout.addWidget(sidebar_DashboardButton)
 
-        self.sidebar_layout.addStretch() #throws everyhing to the top
-        self.sidebar_layout.setSpacing(15)
-        self.sidebar_frame.setStyleSheet("background-color: #333; color: white;")
-    
-    def setup_top_bar(self):
-        self.top_bar.setObjectName('topBar')
+        title_frame.setObjectName('titleFrame')
+        self.title_label.setObjectName('mainHeader')
+
+        title_frame_layout.addWidget(self.title_label)
+        self.layout.addWidget(title_frame)
+        self.setup_buttons()
+
+        self.layout.addStretch() #throws everyhing to the top
+        self.layout.setSpacing(15)
+
+    def setup_buttons(self):
+        dashboard_button = QPushButton('Dashboard')
+        dashboard_button.setObjectName('dashboardButton')
+        dashboard_button.setCursor(Qt.PointingHandCursor)
+        dashboard_button.clicked.connect(lambda: self.app.pages.setCurrentIndex(0))
+
+        my_library_button = QPushButton('My Library')
+        my_library_button.setObjectName('myLibraryButton')
+        my_library_button.setCursor(Qt.PointingHandCursor)
+        my_library_button.clicked.connect(lambda: self.app.pages.setCurrentIndex(1))
+
+        add_title_button = QPushButton('Add Title')
+        add_title_button.setObjectName('addTitleButton')
+        add_title_button.setCursor(Qt.PointingHandCursor)
+        add_title_button.clicked.connect(lambda: self.app.pages.setCurrentIndex(2))
+
+        recommendations_button = QPushButton('Recommendations')
+        recommendations_button.setObjectName('recommendationsButton')
+        recommendations_button.setCursor(Qt.PointingHandCursor)
+        recommendations_button.clicked.connect(lambda: self.app.pages.setCurrentIndex(3))
+
+        import_export_button = QPushButton('Import / Export')
+        import_export_button.setObjectName('importExportButton')
+        import_export_button.setCursor(Qt.PointingHandCursor)
+        import_export_button.clicked.connect(lambda: self.app.pages.setCurrentIndex(4))
+
+        settings_button = QPushButton('Settings')
+        settings_button.setObjectName('settingsButton')
+        settings_button.setCursor(Qt.PointingHandCursor)
+        settings_button.clicked.connect(lambda: self.app.pages.setCurrentIndex(5))
+
+
+        self.layout.addWidget(dashboard_button)
+        self.layout.addWidget(my_library_button)
+        self.layout.addWidget(add_title_button)
+        self.layout.addWidget(recommendations_button)
+        self.layout.addWidget(import_export_button)
+        self.layout.addWidget(settings_button)
+
+class TopBar(QFrame):
+    def __init__(self):
+        super().__init__()
+        self.layout = QHBoxLayout(self)
+        self.setObjectName('topBar')
+        self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText('Search movies & series...')
-        self.top_bar_layout.addWidget(self.search_bar)
-        self.top_bar.setFixedHeight(60)
+        self.layout.addWidget(self.search_bar)
+        self.setFixedHeight(60)
+
+class DashboardPage(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QGridLayout()
+        test_label = QLabel('Dashboard Page')
+        self.layout.addWidget(test_label, 0, 0)
+        self.setLayout(self.layout)
+
+class MyLibraryPage(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QGridLayout()
+        test_label = QLabel('My Library Page')
+        self.layout.addWidget(test_label, 0, 0)
+        self.setLayout(self.layout)
+
+class AddTitlePage(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QGridLayout()
+        test_label = QLabel('Add Title Page')
+        self.layout.addWidget(test_label, 0, 0)
+        self.setLayout(self.layout)
+
+class RecommendationsPage(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QGridLayout()
+        test_label = QLabel('Recommendations Page')
+        self.layout.addWidget(test_label, 0, 0)
+        self.setLayout(self.layout)
+
+class ImportExportPage(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QGridLayout()
+        test_label = QLabel('Import / Export Page')
+        self.layout.addWidget(test_label, 0, 0)
+        self.setLayout(self.layout)
+
+class SettingsPage(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QGridLayout()
+        test_label = QLabel('Settings Page')
+        self.layout.addWidget(test_label, 0, 0)
+        self.setLayout(self.layout)
 
 
 if __name__ == "__main__":
