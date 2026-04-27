@@ -2,7 +2,7 @@ import sys
 import os
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QCheckBox, QGridLayout, QFrame, QVBoxLayout, QHBoxLayout, QLineEdit, QStackedWidget, QComboBox
+from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QScrollArea, QGridLayout, QFrame, QVBoxLayout, QHBoxLayout, QLineEdit, QStackedWidget, QComboBox, QSizePolicy
 from style import style_sheet
 
 
@@ -22,6 +22,11 @@ class ScreenStats(QWidget):
         self.pages = QStackedWidget()
         self.top_bar = TopBar()
         self.sidebar_frame = SideBar(self)
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidget(self.pages)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll_area.setFrameShape(QFrame.NoFrame)
 
         self.pages.addWidget(self.dashboard_page)
         self.pages.addWidget(self.my_library_page)
@@ -30,6 +35,8 @@ class ScreenStats(QWidget):
         self.pages.addWidget(self.import_export_page)
         self.pages.addWidget(self.settings_page)
         self.pages.setCurrentIndex(1)
+        self.pages.currentChanged.connect(self.update_scroll_area_size)
+
 
 
         self.layout = QGridLayout()
@@ -45,7 +52,7 @@ class ScreenStats(QWidget):
         self.layout.addWidget(self.sidebar_frame, 0, 0, 2, 1)
 
         self.layout.addWidget(self.top_bar, 0, 1)
-        self.layout.addWidget(self.pages, 1, 1)
+        self.layout.addWidget(self.scroll_area, 1, 1)
 
         # MAGIC LINES: Tell the grid where to push the "empty" space
         self.layout.setColumnStretch(1, 1) # Column 1 (content) takes all extra width
@@ -59,6 +66,26 @@ class ScreenStats(QWidget):
     def change_mode(self, button):
         self.mode = 'dark' if self.mode == 'light' else 'light'
         button.setText('Light mode' if self.mode == 'dark' else 'Dark mode') 
+
+    def update_scroll_area_size(self, index):
+        # Get the new page
+        current_page = self.pages.widget(index)
+        
+        # Loop through all pages to ignore their size, except the current one
+        for i in range(self.pages.count()):
+            page = self.pages.widget(i)
+            if i == index:
+                # Current page should grow/shrink naturally
+                page.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            else:
+                # Hidden pages should not influence the ScrollArea size
+                page.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+                
+        # Force the stack and scroll area to recalculate layout
+        current_page.adjustSize()
+        self.page.adjustSize()
+        # Reset scroll to top for the new page
+        self.scroll_area.verticalScrollBar().setValue(0)
 
 class SideBar(QFrame):
     def __init__(self, app):
@@ -150,7 +177,7 @@ class TopBar(QFrame):
         self.layout.addWidget(self.search_bar)
         self.setFixedHeight(60)
 
-class DashboardPage(QWidget):
+class DashboardPage(QFrame):
     def __init__(self):
         super().__init__()
         self.layout = QGridLayout()
@@ -175,7 +202,7 @@ class MyLibraryPage(QFrame):
         self.layout.addWidget(self.sub_header, 1, 0)
         
 
-        self.layout.setSpacing(30)
+        self.layout.setSpacing(25)
         self.layout.setContentsMargins(30, 30, 30, 30)
         self.setLayout(self.layout)
 
@@ -193,8 +220,8 @@ class MyLibraryPage(QFrame):
                 background-position: center;
                 min-height: 430px;
                 max-height: 430px;
-                min-width: 320px;
-                max-width: 320px;
+                min-width: 300px;
+                max-width: 300px;
             }}
         """)
         return movie_image
@@ -221,7 +248,7 @@ class MyLibraryPage(QFrame):
         self.layout.addWidget(filter_button, 3, 0)
         self.layout.addWidget(sort_button, 3, 1)
 
-class AddTitlePage(QWidget):
+class AddTitlePage(QFrame):
     def __init__(self):
         super().__init__()
         self.layout = QGridLayout()
@@ -229,7 +256,7 @@ class AddTitlePage(QWidget):
         self.layout.addWidget(test_label, 0, 0)
         self.setLayout(self.layout)
 
-class RecommendationsPage(QWidget):
+class RecommendationsPage(QFrame):
     def __init__(self):
         super().__init__()
         self.layout = QGridLayout()
@@ -237,7 +264,7 @@ class RecommendationsPage(QWidget):
         self.layout.addWidget(test_label, 0, 0)
         self.setLayout(self.layout)
 
-class ImportExportPage(QWidget):
+class ImportExportPage(QFrame):
     def __init__(self):
         super().__init__()
         self.layout = QGridLayout()
@@ -245,7 +272,7 @@ class ImportExportPage(QWidget):
         self.layout.addWidget(test_label, 0, 0)
         self.setLayout(self.layout)
 
-class SettingsPage(QWidget):
+class SettingsPage(QFrame):
     def __init__(self):
         super().__init__()
         self.layout = QGridLayout()
@@ -258,4 +285,5 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     screenstats = ScreenStats()
     screenstats.showFullScreen()
+
     app.exec()

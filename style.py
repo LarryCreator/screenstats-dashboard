@@ -4,6 +4,7 @@ sidebar_border_color = "#2B1700"
 topbar_bg_color = "#291F15"
 topbar_font_color = "#CAB295"
 searchbar_bg_color = "#3D2F20"
+scrollbar_bg_color = "#252525"
 
 x2 = "#381F02"
 style_sheet = f"""
@@ -94,6 +95,37 @@ style_sheet = f"""
 
             QFrame#mlPage {{
                 background-color: {page_bg_color};
+            }}
+
+            /* The background of the scrollbar */
+            QScrollBar:vertical {{
+                background: {scrollbar_bg_color};
+                width: 12px;
+                margin: 0px 0px 0px 0px;
+                border: none;
+            }}
+
+            /* The actual draggable handle */
+            QScrollBar::handle:vertical {{
+                background: #c0c0c0;
+                min-height: 20px;
+                border-radius: 15px; /* Makes it rounded */
+                margin: 2px;
+            }}
+
+            /* Handle color when hovering */
+            QScrollBar::handle:vertical:hover {{
+                background: #a0a0a0;
+            }}
+
+            /* Removes the arrows at the top and bottom */
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+                height: 0px;
+            }}
+
+            /* Removes the background area above/below the handle */
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
+                background: none;
             }}
                            
         """
