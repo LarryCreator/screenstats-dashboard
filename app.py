@@ -38,16 +38,15 @@ class ScreenStats(QWidget):
         self.pages.setCurrentIndex(1)
         self.pages.currentChanged.connect(self.update_scroll_area_size)
 
-
-
         self.layout = QGridLayout()
         self.setup_main_layout()
-
         self.setStyleSheet(style_sheet)
 
     def setup_main_layout(self):
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.setColumnStretch(0, 0)
+        self.layout.setColumnStretch(1, 1)
+        self.layout.setSpacing(0)
 
         # Sidebar: Row 0, Col 0, spans 2 rows, span 1 column
         self.layout.addWidget(self.sidebar_frame, 0, 0, 2, 1)
@@ -55,13 +54,8 @@ class ScreenStats(QWidget):
         self.layout.addWidget(self.top_bar, 0, 1)
         self.layout.addWidget(self.scroll_area, 1, 1)
 
-        # MAGIC LINES: Tell the grid where to push the "empty" space
-        self.layout.setColumnStretch(1, 1) # Column 1 (content) takes all extra width
-
-
         self.sidebar_frame.setMinimumWidth(180)
         self.sidebar_frame.setMaximumWidth(250)
-        self.layout.setSpacing(0)
         self.setLayout(self.layout)
 
     def change_mode(self, button):
@@ -229,6 +223,7 @@ class MyLibraryPage(QFrame):
              'year': 2009
              }
         ]
+        
         column_number = 0
         row_number = 4
         for card in cards:
@@ -238,6 +233,12 @@ class MyLibraryPage(QFrame):
             if column_number > 4:
                 column_number = 0
                 row_number += 1
+
+        if len(cards) < 4:
+            self.layout.setColumnStretch(column_number, 1)
+        if len(cards) <= 5:
+            self.layout.setRowStretch(5, 1)
+
 
     def setup_buttons(self):
         filter_button = QPushButton('Filters')
