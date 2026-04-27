@@ -5,6 +5,8 @@ topbar_bg_color = "#291F15"
 topbar_font_color = "#CAB295"
 searchbar_bg_color = "#3D2F20"
 scrollbar_bg_color = "#252525"
+subcard_title_color = "#BDBDBD"
+color = 'rgba(0, 0, 0, 0.57)'
 
 x2 = "#381F02"
 style_sheet = f"""
@@ -126,6 +128,51 @@ style_sheet = f"""
             /* Removes the background area above/below the handle */
             QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
                 background: none;
+            }}
+
+            QFrame[class="mediaCard"] {{
+                background-repeat: no-repeat;
+                background-position: center;
+                min-height: 430px;
+                max-height: 430px;
+                min-width: 280px;
+                max-width: 280px;
+                border-radius: 15px;
+            }}
+
+            QLabel[class="cardTitle"] {{
+                color: white;
+                font-size: 15px;
+                padding: 5px 0 0 5px;
+            }}
+
+            QLabel[class="subCardTitle"] {{
+                color: {subcard_title_color};
+                font-size: 12px;
+                padding: 0 0 0 5px;
+
+            }}
+
+            QPushButton[class="cardRating"] {{
+                margin: 0 0 10px 0;
+                color: white;
+                font-size: 13px;
+                border: None;
+                background: None;
+                text-align: left;
+                background-color: {color};            
+            }}
+
+            QLabel[class="cardYear"] {{
+                color: white;
+                font-size: 13px;
+                margin: 0 0 10px 0;
+                padding: 5px;
+                border: None;
+                background: None;
+                text-align: left;
+                background-color: {color};
+                font-weight: bold;            
             }}
                            
         """
