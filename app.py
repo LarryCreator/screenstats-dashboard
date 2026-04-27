@@ -1,6 +1,8 @@
 import sys
+import os
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QCheckBox, QGridLayout, QFrame, QVBoxLayout, QHBoxLayout, QLineEdit, QStackedWidget
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QCheckBox, QGridLayout, QFrame, QVBoxLayout, QHBoxLayout, QLineEdit, QStackedWidget, QComboBox
 from style import style_sheet
 
 
@@ -8,6 +10,7 @@ class ScreenStats(QWidget):
     def __init__(self):
         super().__init__()
         self.title = 'ScreenStats'
+        self.mode = 'dark'
         self.setWindowTitle(self.title)
 
         self.dashboard_page = DashboardPage()
@@ -37,7 +40,6 @@ class ScreenStats(QWidget):
     def setup_main_layout(self):
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.setColumnStretch(0, 0)
-        self.layout.setColumnStretch(1, 1)
 
         # Sidebar: Row 0, Col 0, spans 2 rows, span 1 column
         self.layout.addWidget(self.sidebar_frame, 0, 0, 2, 1)
@@ -47,13 +49,16 @@ class ScreenStats(QWidget):
 
         # MAGIC LINES: Tell the grid where to push the "empty" space
         self.layout.setColumnStretch(1, 1) # Column 1 (content) takes all extra width
-        self.layout.setRowStretch(1, 1)    # Row 1 (bottom) takes all extra height
 
 
         self.sidebar_frame.setMinimumWidth(180)
         self.sidebar_frame.setMaximumWidth(250)
-
+        self.layout.setSpacing(0)
         self.setLayout(self.layout)
+
+    def change_mode(self, button):
+        self.mode = 'dark' if self.mode == 'light' else 'light'
+        button.setText('Light mode' if self.mode == 'dark' else 'Dark mode') 
 
 class SideBar(QFrame):
     def __init__(self, app):
@@ -77,36 +82,54 @@ class SideBar(QFrame):
         self.layout.setSpacing(15)
 
     def setup_buttons(self):
+        base_dir = os.path.dirname(__file__)
+
         dashboard_button = QPushButton('Dashboard')
         dashboard_button.setObjectName('dashboardButton')
         dashboard_button.setCursor(Qt.PointingHandCursor)
+        dashboard_icon_path = os.path.join(base_dir, "icons", "arrowOutwardIcon.png")
+        dashboard_button.setIcon(QIcon(dashboard_icon_path))
         dashboard_button.clicked.connect(lambda: self.app.pages.setCurrentIndex(0))
 
         my_library_button = QPushButton('My Library')
         my_library_button.setObjectName('myLibraryButton')
         my_library_button.setCursor(Qt.PointingHandCursor)
+        my_library_icon_path = os.path.join(base_dir, "icons", "smartDisplayIcon.png")
+        my_library_button.setIcon(QIcon(my_library_icon_path))
         my_library_button.clicked.connect(lambda: self.app.pages.setCurrentIndex(1))
 
         add_title_button = QPushButton('Add Title')
         add_title_button.setObjectName('addTitleButton')
         add_title_button.setCursor(Qt.PointingHandCursor)
+        add_title_icon_path = os.path.join(base_dir, "icons", "plusIcon.png")
+        add_title_button.setIcon(QIcon(add_title_icon_path))
         add_title_button.clicked.connect(lambda: self.app.pages.setCurrentIndex(2))
 
         recommendations_button = QPushButton('Recommendations')
         recommendations_button.setObjectName('recommendationsButton')
         recommendations_button.setCursor(Qt.PointingHandCursor)
+        recommendations_icon_path = os.path.join(base_dir, "icons", "starIcon.png")
+        recommendations_button.setIcon(QIcon(recommendations_icon_path))
         recommendations_button.clicked.connect(lambda: self.app.pages.setCurrentIndex(3))
 
         import_export_button = QPushButton('Import / Export')
         import_export_button.setObjectName('importExportButton')
         import_export_button.setCursor(Qt.PointingHandCursor)
+        import_export_icon_path = os.path.join(base_dir, "icons", "swapIcon.png")
+        import_export_button.setIcon(QIcon(import_export_icon_path))
         import_export_button.clicked.connect(lambda: self.app.pages.setCurrentIndex(4))
 
         settings_button = QPushButton('Settings')
         settings_button.setObjectName('settingsButton')
+        settings_icon_path = os.path.join(base_dir, "icons", "gearIcon.png")
+        settings_button.setIcon(QIcon(settings_icon_path))
         settings_button.setCursor(Qt.PointingHandCursor)
         settings_button.clicked.connect(lambda: self.app.pages.setCurrentIndex(5))
 
+        light_dark_button = QPushButton('Light mode' if self.app.mode == 'dark' else 'Dark mode')
+        light_dark_button.setObjectName('lightDarkButton')
+        light_dark_button.setCursor(Qt.PointingHandCursor)
+        light_dark_button.clicked.connect(lambda: self.app.change_mode(light_dark_button))
 
         self.layout.addWidget(dashboard_button)
         self.layout.addWidget(my_library_button)
@@ -114,6 +137,8 @@ class SideBar(QFrame):
         self.layout.addWidget(recommendations_button)
         self.layout.addWidget(import_export_button)
         self.layout.addWidget(settings_button)
+        self.layout.addWidget(light_dark_button)
+
 
 class TopBar(QFrame):
     def __init__(self):
@@ -133,13 +158,68 @@ class DashboardPage(QWidget):
         self.layout.addWidget(test_label, 0, 0)
         self.setLayout(self.layout)
 
-class MyLibraryPage(QWidget):
+class MyLibraryPage(QFrame):
     def __init__(self):
         super().__init__()
+        self.setObjectName('mlPage')
         self.layout = QGridLayout()
-        test_label = QLabel('My Library Page')
-        self.layout.addWidget(test_label, 0, 0)
+        self.main_header = QLabel('My Library')
+        self.main_header.setObjectName('myLibraryHeader')
+        self.sub_header = QLabel('You have 8 titles in your collection')
+        self.sub_header.setObjectName('myLibrarySubHeader')
+
+        self.setup_buttons()
+        self.setup_cards()
+        
+        self.layout.addWidget(self.main_header, 0, 0)
+        self.layout.addWidget(self.sub_header, 1, 0)
+        
+
+        self.layout.setSpacing(30)
+        self.layout.setContentsMargins(30, 30, 30, 30)
         self.setLayout(self.layout)
+
+    def new_movie_card(self, title,  genre, rating, year):
+        base_dir = os.path.dirname(__file__)
+        card_path = os.path.join(base_dir, "images", "card.png")
+        safe_path = card_path.replace('\\', '/')
+        movie_image = QFrame()
+        card_layout = QGridLayout(movie_image)
+        movie_image.setObjectName('test')
+        movie_image.setStyleSheet(f"""
+            QFrame#test {{
+                background-image: url("{safe_path}");
+                background-repeat: no-repeat;
+                background-position: center;
+                min-height: 430px;
+                max-height: 430px;
+                min-width: 320px;
+                max-width: 320px;
+            }}
+        """)
+        return movie_image
+    
+    def setup_cards(self):
+        self.layout.addWidget(self.new_movie_card('The Scream', '', 10, 2020), 4, 0)
+        self.layout.addWidget(self.new_movie_card('The Scream', '', 10, 2020), 4, 1)
+        self.layout.addWidget(self.new_movie_card('The Scream', '', 10, 2020), 4, 2)
+        self.layout.addWidget(self.new_movie_card('The Scream', '', 10, 2020), 4, 3)
+        self.layout.addWidget(self.new_movie_card('The Scream', '', 10, 2020), 4, 4)
+        self.layout.addWidget(self.new_movie_card('The Scream', '', 10, 2020), 5, 0)
+
+    def setup_buttons(self):
+        filter_button = QPushButton('Filters')
+        filter_button.setObjectName('mlFilterButton')
+        filter_button.setCursor(Qt.PointingHandCursor)
+
+        sort_button = QComboBox()
+        options = ['Sort by: Title', 'Sort by: Date Added', 'Sort by: Rating', 'Sort by: Year']
+        sort_button.insertItems(0, options)
+        sort_button.setObjectName('mlSortButton')
+        sort_button.setCursor(Qt.PointingHandCursor)
+
+        self.layout.addWidget(filter_button, 3, 0)
+        self.layout.addWidget(sort_button, 3, 1)
 
 class AddTitlePage(QWidget):
     def __init__(self):
