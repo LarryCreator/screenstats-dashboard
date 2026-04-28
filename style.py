@@ -34,7 +34,7 @@ style_sheet = f"""
                 font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
                 text-transform: uppercase;
                 letter-spacing: 2px;
-                color: #c4a15b; 
+                color: {'#c4a15b'}; 
                 font-size: 17px;
                 font-weight: bold;
             }}
@@ -43,7 +43,7 @@ style_sheet = f"""
                 font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
                 text-transform: uppercase;
                 letter-spacing: 2px;
-                color: #c4a15b; 
+                color: {'#c4a15b'}; 
                 font-size: 30px;
                 font-weight: bold;
 
@@ -52,9 +52,22 @@ style_sheet = f"""
             QLabel#myLibrarySubHeader {{
                 font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
                 letter-spacing: 2px;
-                color: gray; 
+                color: {topbar_font_color}; 
                 font-size: 16px;
-                font-weight: bold;
+            }}
+
+            QPushButton#mlAddTitleButton {{
+                padding: 15px;
+                font-size: 15px;
+                border: None;
+                border-radius: 10px;
+                background: None;
+                background-color: {'#c4a15b'};
+                color: black;
+            }}
+
+            QPushButton#mlAddTitleButton:hover {{
+                background-color: {"#a38342"};
             }}
                            
             QLineEdit {{
@@ -85,14 +98,40 @@ style_sheet = f"""
             }}
 
             QPushButton#mlFilterButton {{
-                padding: 10px;
-                font-size: 15px;
-                border: 2px solid gray;
+                padding: 7px;
+                font-size: 14px;
+                border: 1px solid gray;
                 background: None;
-                font-weight: bold;
                 color: white;
                 border-radius: 10px;
-                text-align: center;            
+                text-align: center;
+                min-width: 100px;
+                max-width: 100px;            
+            }}
+
+            QPushButton#mlFilterButton:hover {{
+                border: 1px solid {topbar_font_color};
+            }}
+
+            QComboBox#mlSortButton {{
+                padding: 7px;
+                border: 1px solid gray;
+                background: None;
+                background-color: transparent;
+                font-size: 14px;
+                color: white;
+                border-radius: 10px;
+                text-align: center;
+                min-width: 190px;
+                max-width: 190px;            
+            }}
+
+            QComboBox#mlSortButton:hover {{
+                border: 1px solid {topbar_font_color};
+            }}
+
+            QComboBox#mlSortButton:focus {{
+                border: 1px solid {topbar_font_color};
             }}
 
             QFrame#mlPage {{

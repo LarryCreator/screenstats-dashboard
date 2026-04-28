@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QScrol
 from style import style_sheet
 
 base_dir = os.path.dirname(__file__)
+icons_folder = 'icons'
 
 class ScreenStats(QWidget):
     def __init__(self):
@@ -15,7 +16,7 @@ class ScreenStats(QWidget):
         self.setWindowTitle(self.title)
 
         self.dashboard_page = DashboardPage()
-        self.my_library_page = MyLibraryPage()
+        self.my_library_page = MyLibraryPage(self)
         self.add_title_page = AddTitlePage()
         self.recommendations_page = RecommendationsPage()
         self.import_export_page = ImportExportPage()
@@ -82,6 +83,16 @@ class ScreenStats(QWidget):
         # Reset scroll to top for the new page
         self.scroll_area.verticalScrollBar().setValue(0)
 
+    def create_new_button(self, display_text, obj_name, icon_path=None, page_index=None):
+        button = QPushButton(display_text)
+        button.setObjectName(obj_name)
+        button.setCursor(Qt.PointingHandCursor)
+        if icon_path is not None:
+            button.setIcon(QIcon(icon_path))
+        if page_index is not None:
+            button.clicked.connect(lambda: self.pages.setCurrentIndex(page_index))
+        return button
+
 class SideBar(QFrame):
     def __init__(self, app):
         super().__init__()
@@ -103,18 +114,7 @@ class SideBar(QFrame):
         self.layout.addStretch() #throws everyhing to the top
         self.layout.setSpacing(15)
 
-    def create_new_button(self, display_text, obj_name, icon_path=None, page_index=None):
-        button = QPushButton(display_text)
-        button.setObjectName(obj_name)
-        button.setCursor(Qt.PointingHandCursor)
-        if icon_path is not None:
-            button.setIcon(QIcon(icon_path))
-        if page_index is not None:
-            button.clicked.connect(lambda: self.app.pages.setCurrentIndex(page_index))
-        return button
-
     def setup_buttons(self):
-        icons_folder = 'icons'
         buttons = [
             {
                 'icon': 'arrowOutwardIcon.png',
@@ -165,7 +165,7 @@ class SideBar(QFrame):
                 icon_path = os.path.join(base_dir, icons_folder, button['icon'])
             else:
                 icon_path = None
-            new_button = self.create_new_button(button['display_text'], button['obj_name'], icon_path, button['page_index'])
+            new_button = self.app.create_new_button(button['display_text'], button['obj_name'], icon_path, button['page_index'])
             if button['obj_name'] == 'lightDarkButton':
                 new_button.clicked.connect(lambda: self.app.change_mode(new_button))
             self.layout.addWidget(new_button)
@@ -190,43 +190,82 @@ class DashboardPage(QFrame):
         self.setLayout(self.layout)
 
 class MyLibraryPage(QFrame):
-    def __init__(self):
+    def __init__(self, app):
         super().__init__()
+        self.app = app
         self.setObjectName('mlPage')
         self.layout = QGridLayout()
-        self.main_header = QLabel('My Library')
-        self.main_header.setObjectName('myLibraryHeader')
-        self.sub_header = QLabel('You have 8 titles in your collection')
-        self.sub_header.setObjectName('myLibrarySubHeader')
-
+        self.buttons_frame = QFrame()
+        self.buttons_frame_layout = QGridLayout(self.buttons_frame)
+        self.cards = []
         self.setup_buttons()
         self.setup_cards()
+        self.main_header = QLabel('My Library')
+        self.main_header.setObjectName('myLibraryHeader')
+        self.sub_header = QLabel(f'{len(self.cards)} titles in your collection')
+        self.sub_header.setObjectName('myLibrarySubHeader')
+        self.setup_layout()
         
+    def setup_buttons_frame_layout(self):
+        self.buttons_frame_layout.setColumnStretch(2, 1)
+        self.buttons_frame_layout.setSpacing(20)
+        self.buttons_frame_layout.setContentsMargins(0, 0, 0, 0)
+
+
+    def setup_layout(self):
+        self.setup_buttons_frame_layout()
         self.layout.addWidget(self.main_header, 0, 0)
         self.layout.addWidget(self.sub_header, 1, 0)
-        
+        self.layout.addWidget(self.buttons_frame, 2, 0, 1, -1)
+
 
         self.layout.setSpacing(25)
         self.layout.setContentsMargins(30, 30, 30, 30)
+
+        my_cards_length = len(self.cards)
+
+        if my_cards_length < 4 and my_cards_length >= 2:
+            self.layout.setColumnStretch(len(self.cards), 1)
+        elif my_cards_length == 1 or my_cards_length == 0:
+            self.layout.setColumnStretch(2, 1)
+
+        if len(self.cards) <= 5:
+            self.layout.setRowStretch(5, 1)
+
         self.setLayout(self.layout)
     
     def setup_cards(self):
-        cards = [
+        self.cards = [
             {'title': 'The Scream',
              'genre': 'Horror',
              'rating': 10,
              'year': 2004
              },
-             {'title': 'Spider-Man',
-             'genre': 'Action',
-             'rating': 9,
-             'year': 2009
-             }
+             {'title': 'The Scream',
+             'genre': 'Horror',
+             'rating': 10,
+             'year': 2004
+             },
+             {'title': 'The Scream',
+             'genre': 'Horror',
+             'rating': 10,
+             'year': 2004
+             },
+             {'title': 'The Scream',
+             'genre': 'Horror',
+             'rating': 10,
+             'year': 2004
+             },
+             {'title': 'The Scream',
+             'genre': 'Horror',
+             'rating': 10,
+             'year': 2004
+             },
         ]
         
         column_number = 0
         row_number = 4
-        for card in cards:
+        for card in self.cards:
             new_card = MediaCard(card['title'], card['genre'], card['rating'], card['year'], f"card{row_number}-{column_number}")
             self.layout.addWidget(new_card, row_number, column_number)
             column_number += 1
@@ -234,25 +273,46 @@ class MyLibraryPage(QFrame):
                 column_number = 0
                 row_number += 1
 
-        if len(cards) < 4:
-            self.layout.setColumnStretch(column_number, 1)
-        if len(cards) <= 5:
-            self.layout.setRowStretch(5, 1)
-
-
     def setup_buttons(self):
-        filter_button = QPushButton('Filters')
-        filter_button.setObjectName('mlFilterButton')
-        filter_button.setCursor(Qt.PointingHandCursor)
+        add_title_button_icon_path = os.path.join(base_dir, icons_folder, 'plusBlackIcon.png')
+        add_title_button = self.app.create_new_button('Add Title', 'mlAddTitleButton', add_title_button_icon_path, 2)
 
-        sort_button = QComboBox()
+        filter_button_icon_path = os.path.join(base_dir, icons_folder, 'filterIcon.png')
+        filter_button = self.app.create_new_button('Filters', 'mlFilterButton', filter_button_icon_path, None)
+
+        self.setup_sort_button()
+        
+        self.buttons_frame_layout.addWidget(filter_button, 0, 0)
+        self.buttons_frame_layout.addWidget(self.sort_button, 0, 1)
+        self.buttons_frame_layout.addWidget(add_title_button, 0, 3)
+    
+    def setup_sort_button(self):
+        self.sort_button = QComboBox()
+
         options = ['Sort by: Title', 'Sort by: Date Added', 'Sort by: Rating', 'Sort by: Year']
-        sort_button.insertItems(0, options)
-        sort_button.setObjectName('mlSortButton')
-        sort_button.setCursor(Qt.PointingHandCursor)
 
-        self.layout.addWidget(filter_button, 3, 0)
-        self.layout.addWidget(sort_button, 3, 1)
+        self.sort_button.insertItems(0, options)
+        self.sort_button.setObjectName('mlSortButton')
+
+        self.sort_button.setEditable(True)
+        self.sort_button.lineEdit().setReadOnly(True)
+        self.sort_button.lineEdit().setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.sort_button.lineEdit().installEventFilter(self)
+        self.sort_button.installEventFilter(self)
+        self.sort_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.sort_button.lineEdit().setCursor(Qt.CursorShape.PointingHandCursor)
+        self.sort_button.lineEdit().setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+    #this even is necessary for the comboBox to be clickable anywhere on itself
+    def eventFilter(self, obj, event):
+        if obj == self.sort_button.lineEdit() or obj == self.sort_button:
+            # Trigger popup on MouseButtonRelease (standard click behavior)
+            if event.type() == event.Type.MouseButtonRelease:
+                if event.button() == Qt.MouseButton.LeftButton:
+                    self.sort_button.showPopup()
+                    self.sort_button.setFocus()
+                    return True
+        return super().eventFilter(obj, event)  
 
 class MediaCard(QFrame):
     def __init__(self, title, genre, rating, year, card_id):
