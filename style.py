@@ -6,6 +6,7 @@ topbar_font_color = "#CAB295"
 searchbar_bg_color = "#3D2F20"
 scrollbar_bg_color = "#252525"
 subcard_title_color = "#BDBDBD"
+pages_headers_color = "#E2D3C0"
 color = 'rgba(0, 0, 0, 0.57)'
 
 x2 = "#381F02"
@@ -43,7 +44,7 @@ style_sheet = f"""
                 font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
                 text-transform: uppercase;
                 letter-spacing: 2px;
-                color: {'#c4a15b'}; 
+                color: {pages_headers_color}; 
                 font-size: 30px;
                 font-weight: bold;
 
@@ -134,7 +135,11 @@ style_sheet = f"""
                 border: 1px solid {topbar_font_color};
             }}
 
-            QFrame#mlPage {{
+            QFrame#myLibraryPage {{
+                background-color: {page_bg_color};
+            }}
+
+            QFrame#addTitlePage {{
                 background-color: {page_bg_color};
             }}
 
@@ -213,5 +218,21 @@ style_sheet = f"""
                 background-color: {color};
                 font-weight: bold;            
             }}
-                           
+
+            QLabel#addTitleMainHeader {{
+                font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                color: {pages_headers_color}; 
+                font-size: 30px;
+                font-weight: bold;
+
+            }}
+
+            QLabel#addTitleSubHeader {{
+                font-family: "Cinzel", "Trajan Pro", "Times New Roman", serif;
+                letter-spacing: 2px;
+                color: {topbar_font_color}; 
+                font-size: 16px;
+            }}         
         """
